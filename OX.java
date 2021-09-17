@@ -11,7 +11,7 @@ public class OX extends JFrame implements MouseListener{
     int board_size;
 
 //=========================================================================
-    void setBoardboard_size(int s){
+    void setboard_size(int s){
         board_size = s;
         board_array = new String[s][s];
         for(int i=0;i<board_size;i++){
@@ -24,7 +24,6 @@ public class OX extends JFrame implements MouseListener{
     void add_position(Integer row,Integer col) {
 
         if(board_array[row][col] == "X" || board_array[row][col] == "O"){
-            System.out.println("NOPE");
         } else {
             board_array[row][col] = this.player;
             change_player();
@@ -44,14 +43,14 @@ public class OX extends JFrame implements MouseListener{
         String[] temp_hor = new String[board_size];
         String[] temp_ver = new String[board_size];
         for (int i=0;i<board_size;i++){
-            if(Arrays.deepEquals(checker, board_array[i])){
+            if(Arrays.deepEquals(checker, board_array[i])){ // check row
                 return true;
             }
             String[] temp = new String[board_size];
             for (int j=0;j<board_size;j++){
                 temp[j] = board_array[j][i];
             }
-            if(Arrays.deepEquals(checker, temp)){
+            if(Arrays.deepEquals(checker, temp)){ // check collumn
                 return true;
             }
             temp_hor[i] = board_array[i][i];
@@ -86,11 +85,8 @@ public class OX extends JFrame implements MouseListener{
         return turn_count;
     }
 //=========================================================================
-    int[] Convert_mousepos(int mouse_x,int mouse_y){
+    int[] convert_mousepos(int mouse_x,int mouse_y){
         int[] row_col = {(int)mouse_y/(sc_size/board_size),(int)mouse_x/(sc_size/board_size)};
-        int row = (int)mouse_y/(sc_size/board_size);
-        int col = (int)mouse_x/(sc_size/board_size);
-        System.out.println(row +" "+col);
         return row_col;
     }
     //-----------UESLESS--################
@@ -111,12 +107,14 @@ public class OX extends JFrame implements MouseListener{
 
             String str_size = tf1.getText();
             int int_size = Integer.parseInt(str_size);
-            if (int_size>1){
+            if (int_size>2){
                 board_size = int_size;
-                setBoardboard_size(board_size);
+                setboard_size(board_size);
             }
             else{
-                tf1.setText("Can not");
+                tf1.setText("");
+                g2d.setColor(Color.RED);
+                g2d.drawString("Board size much more than 2",250,430);
             }
         }
     }
@@ -137,7 +135,7 @@ public class OX extends JFrame implements MouseListener{
             }
         }
         else if(game_mode.equals("Play")){
-            int[] row_col = Convert_mousepos(e.getX(),e.getY());
+            int[] row_col = convert_mousepos(e.getX(),e.getY());
             add_position(row_col[0],row_col[1]);
             if(check_winner()){
                 game_mode = "Win";
@@ -148,7 +146,7 @@ public class OX extends JFrame implements MouseListener{
             
             game_mode = "Play";
             turn_count = 0;
-            setBoardboard_size(board_size);
+            setboard_size(board_size);
             screen.removeAll();
             repaint();
             tf1 = new JTextField();
@@ -162,7 +160,7 @@ public class OX extends JFrame implements MouseListener{
     String game_mode = "Menu";
     final int sc_size = 800;
 
-    void Draw_game(){
+    void draw_Game(){
         int table_size = sc_size/board_size;
         screen.removeAll();
         Graphics2D g2d = (Graphics2D) screen.getGraphics();
@@ -173,14 +171,23 @@ public class OX extends JFrame implements MouseListener{
             for (int j=0;j<board_size;j++){
                 g2d.setColor(Color.black);
                 g2d.drawLine(j*table_size, 0, j*table_size, sc_size);
-                g2d.setColor(Color.blue);
                 g2d.setFont(new Font("Calibri", Font.PLAIN, table_size));
+                if (board_array[i][j].equals("O")){
+                    g2d.setColor(Color.blue);
+                }
+                else if(board_array[i][j].equals("X")){
+                    g2d.setColor(Color.red);                    
+                }
                 g2d.drawString(board_array[i][j],(table_size*j)+20,(table_size*(i+1))-20);
             }
         }
+        if(turn_count == board_size*board_size && !check_winner()){
+            game_mode = "Win";
+            repaint();
+        }
     }
     JTextField tf1;
-    void Draw_menu(){
+    void draw_Menu(){
         
         Graphics2D g2d = (Graphics2D) screen.getGraphics();
         g2d.setStroke(new BasicStroke(3));
@@ -194,30 +201,35 @@ public class OX extends JFrame implements MouseListener{
         g2d.setFont(new Font("Calibri", Font.PLAIN, 20));
         g2d.drawString("Insert board size.",320,290);
     }
-    void Draw_win(){
+    void draw_Win(){
         screen.removeAll();
         Graphics2D g2d = (Graphics2D) screen.getGraphics();
-        g2d.setColor(Color.ORANGE);
-        g2d.setFont(new Font("Calibri", Font.PLAIN, 150));
-        g2d.drawString(getPlayingmark()+" Win",150,325);
         g2d.setColor(Color.gray);
         g2d.setFont(new Font("Calibri", Font.PLAIN, 20));
         g2d.drawString("Click for play again.",300,500);
+        g2d.setColor(Color.ORANGE);
+        g2d.setFont(new Font("Calibri", Font.PLAIN, 150));
+        if(turn_count == board_size*board_size && !check_winner()){
+            g2d.drawString("DRAW",150,325);
+        }
+        else {
+            g2d.drawString(getPlayingmark()+" Win",150,325);
+        }
     }
     //------------------################
     public void paint(Graphics g){
         switch (game_mode) {
             // super.paint(g);
             case "Menu":
-                Draw_menu();
+                draw_Menu();
                 break;
             case "Play":
                 super.paint(g);
-                Draw_game();
+                draw_Game();
                 break;
             case "Win":
                 super.paint(g);
-                Draw_win();
+                draw_Win();
                 break;
             case "Background":
                 super.paint(g);
